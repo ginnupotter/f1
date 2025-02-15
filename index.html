@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Clock & F1 2025 Schedule</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      margin-bottom: 20px;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    select {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .race-info {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .continent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .continent-box {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .continent-box h2 {
+      color: #2c3e50;
+      border-bottom: 2px solid #ecf0f1;
+      padding-bottom: 10px;
+      margin-top: 0;
+    }
+    .city-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    .city-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #ecf0f1;
+      cursor: help;
+      position: relative;
+    }
+    .city-list li:last-child {
+      border-bottom: none;
+    }
+    .session-tooltip {
+      display: none;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      background-color: #2c3e50;
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+      width: 280px;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .city-list li:hover .session-tooltip {
+      display: block;
+    }
+    @media (max-width: 768px) {
+      .continent-grid {
+        grid-template-columns: 1fr;
+      }
+      .session-tooltip {
+        left: 0;
+        top: 100%;
+      }
+    }
+    .session-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .session-box {
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      padding: 10px;
+    }
+    .race-mode-toggle {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .race-mode-toggle label {
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>World Clock & F1 2025 Schedule</h1>
+      <select id="raceSelect">
+        <option value="">Select F1 Race</option>
+        <!-- Race options will be added here -->
+      </select>
+      <div class="race-mode-toggle">
+        <input type="checkbox" id="showRaceTimes" />
+        <label for="showRaceTimes">Show race times instead of current time</label>
+      </div>
+    </div>
+    
+    <div id="raceInfo" class="race-info" style="display: none;">
+      <!-- Race information will be displayed here -->
+    </div>
+    
+    <div class="continent-grid" id="continentGrid">
+      <!-- Continent boxes will be added here -->
+    </div>
+  </div>
+
+  <script>
+    // F1 2025 race data (placeholder - you can replace with actual data)
+    const races = [
+    {
+        name: "Australian",
+        location: "Melbourne",
+        latitude: -37.8373,
+        longitude: 144.9666,
+        round: 1,
+        slug: "australian-grand-prix",
+        localeKey: "australian-grand-prix",
+        sessions: {
+          fp1: "2025-03-14T01:30:00Z",
+          fp2: "2025-03-14T05:00:00Z",
+          fp3: "2025-03-15T01:30:00Z",
+          qualifying: "2025-03-15T05:00:00Z",
+          gp: "2025-03-16T04:00:00Z"
+        }
+      },
+      {
+        name: "Chinese",
+        location: "Shanghai",
+        latitude: 31.3807,
+        longitude: 121.2498,
+        round: 2,
+        hasSprint:true,
+        slug: "chinese-grand-prix",
+        localeKey: "chinese-grand-prix",
+        sessions: {
+          fp1: "2025-03-21T03:30:00Z",
+          sprintQualifying: "2025-03-21T07:30:00Z",
+          sprint: "2025-03-22T03:00:00Z",
+          qualifying: "2025-03-22T07:00:00Z",
+          gp: "2025-03-23T07:00:00Z"
+        }
+      },
+      {
+        name: "Japanese",
+        location: "Suzuka",
+        latitude: 35.3689,
+        longitude: 138.9256,
+        round: 3,
+        slug: "japanese-grand-prix",
+        localeKey: "japanese-grand-prix",
+        sessions: {
+          fp1: "2025-04-04T02:30:00Z",
+          fp2: "2025-04-04T06:00:00Z",
+          fp3: "2025-04-05T02:30:00Z",
+          qualifying: "2025-04-05T06:00:00Z",
+          gp: "2025-04-06T05:00:00Z"
+        }
+      },
+      {
+        name: "Bahrain",
+        location: "Sakhir",
+        latitude: 26.037,
+        longitude: 50.5112,
+        round: 4,
+        slug: "bahrain-grand-prix",
+        localeKey: "bahrain-grand-prix",
+        sessions: {
+          fp1: "2025-04-11T11:30:00Z",
+          fp2: "2025-04-11T15:00:00Z",
+          fp3: "2025-04-12T12:30:00Z",
+          qualifying: "2025-04-12T16:00:00Z",
+          gp: "2025-04-13T15:00:00Z"
+        }
+      },
+      {
+        name: "Saudi Arabian",
+        location: "Jeddah",
+        latitude: 21.485811,
+        longitude: 39.192505,
+        round: 5,
+        slug: "saudi-arabia-grand-prix",
+        localeKey: "saudi-arabia-grand-prix",
+        sessions: {
+          fp1: "2025-04-18T13:30:00Z",
+          fp2: "2025-04-18T17:00:00Z",
+          fp3: "2025-04-19T13:30:00Z",
+          qualifying: "2025-04-19T17:00:00Z",
+          gp: "2025-04-20T17:00:00Z"
+        }
+      },
+      {
+        name: "Miami",
+        location: "Miami",
+        latitude: 25.957764,
+        longitude: -80.238835,
+        round: 6,
+        hasSprint:true,
+        slug: "miami-grand-prix",
+        localeKey: "miami-grand-prix",
+        sessions: {
+          fp1: "2025-05-02T16:30:00Z",
+          sprintQualifying: "2025-05-02T20:30:00Z",
+          sprint: "2025-05-03T16:00:00Z",
+          qualifying: "2025-05-03T20:00:00Z",
+          gp: "2025-05-04T20:00:00Z"
+        }
+      },
+      {
+        name: "Emilia Romagna Grand Prix",
+        location: "Imola",
+        latitude: 44.344576,
+        longitude: 11.713808,
+        round: 7,
+        slug: "emilia-romagna-grand-prix",
+        localeKey: "emilia-romagna-grand-prix",
+        sessions: {
+          fp1: "2025-05-16T11:30:00Z",
+          fp2: "2025-05-16T15:00:00Z",
+          fp3: "2025-05-17T10:30:00Z",
+          qualifying: "2025-05-17T14:00:00Z",
+          gp: "2025-05-18T13:00:00Z"
+        }
+      },
+      {
+        name: "Monaco",
+        location: "Monte Carlo",
+        latitude: 43.7338,
+        longitude: 7.4215,
+        round: 8,
+        slug: "monaco-grand-prix",
+        localeKey: "monaco-grand-prix",
+        sessions: {
+          fp1: "2025-05-23T11:30:00Z",
+          fp2: "2025-05-23T15:00:00Z",
+          fp3: "2025-05-24T10:30:00Z",
+          qualifying: "2025-05-24T14:00:00Z",
+          gp: "2025-05-25T13:00:00Z"
+        }
+      },
+      {
+        name: "Spanish",
+        location: "Catalunya",
+        latitude: 41.5638,
+        longitude: 2.2585,
+        round: 9,
+        slug: "spanish-grand-prix",
+        localeKey: "spanish-grand-prix",
+        sessions: {
+          fp1: "2025-05-30T11:30:00Z",
+          fp2: "2025-05-30T15:00:00Z",
+          fp3: "2025-05-31T10:30:00Z",
+          qualifying: "2025-05-31T14:00:00Z",
+          gp: "2025-06-01T13:00:00Z"
+        }
+      },
+      {
+        name: "Canadian",
+        location: "Montreal",
+        latitude: 45.5034,
+        longitude: -73.5267,
+        round: 10,
+        slug: "canadian-grand-prix",
+        localeKey: "canadian-grand-prix",
+        sessions: {
+          fp1: "2025-06-13T17:30:00Z",
+          fp2: "2025-06-13T21:00:00Z",
+          fp3: "2025-06-14T16:30:00Z",
+          qualifying: "2025-06-14T20:00:00Z",
+          gp: "2025-06-15T18:00:00Z"
+        }
+      },
+      {
+        name: "Austrian",
+        location: "Spielberg",
+        latitude: 47.2225,
+        longitude: 14.7607,
+        round: 11,
+        slug: "austrian-grand-prix",
+        localeKey: "austrian-grand-prix",
+        sessions: {
+          fp1: "2025-06-27T11:30:00Z",
+          fp2: "2025-06-27T15:00:00Z",
+          fp3: "2025-06-28T10:30:00Z",
+          qualifying: "2025-06-28T14:00:00Z",
+          gp: "2025-06-29T13:00:00Z"
+        }
+      },
+      {
+        name: "British",
+        location: "Silverstone",
+        latitude: 52.0706,
+        longitude: -1.0174,
+        round: 12,
+        slug: "british-grand-prix",
+        localeKey: "british-grand-prix",
+        sessions: {
+          fp1: "2025-07-04T11:30:00Z",
+          fp2: "2025-07-04T15:00:00Z",
+          fp3: "2025-07-05T10:30:00Z",
+          qualifying: "2025-07-05T14:00:00Z",
+          gp: "2025-07-06T14:00:00Z"
+        }
+      },
+      {
+        name: "Belgian",
+        location: "Spa-Francorchamps",
+        latitude: 50.444,
+        longitude: 5.9687,
+        round: 13,
+        hasSprint:true,
+        slug: "belgian-grand-prix",
+        localeKey: "belgian-grand-prix",
+        sessions: {
+          fp1: "2025-07-25T10:30:00Z",
+          sprintQualifying: "2025-07-25T14:30:00Z",
+          sprint: "2025-07-26T10:00:00Z",
+          qualifying: "2025-07-26T14:00:00Z",
+          gp: "2025-07-27T13:00:00Z"
+        }
+      },
+      {
+        name: "Hungarian",
+        location: "Budapest",
+        latitude: 47.583,
+        longitude: 19.2526,
+        round: 14,
+        slug: "hungarian-grand-prix",
+        localeKey: "hungarian-grand-prix",
+        sessions: {
+          fp1: "2025-08-01T11:30:00Z",
+          fp2: "2025-08-01T15:00:00Z",
+          fp3: "2025-08-02T10:30:00Z",
+          qualifying: "2025-08-02T14:00:00Z",
+          gp: "2025-08-03T13:00:00Z"
+        }
+      },
+      {
+        name: "Dutch",
+        location: "Zandvoort",
+        latitude: 52.388408,
+        longitude: 4.547122,
+        round: 15,
+        slug: "dutch-grand-prix",
+        localeKey: "dutch-grand-prix",
+        sessions: {
+          fp1: "2025-08-29T10:30:00Z",
+          fp2: "2025-08-29T14:00:00Z",
+          fp3: "2025-08-30T09:30:00Z",
+          qualifying: "2025-08-30T13:00:00Z",
+          gp: "2025-08-31T13:00:00Z"
+        }
+      },
+      {
+        name: "Italian",
+        location: "Monza",
+        latitude: 45.6169,
+        longitude: 9.2825,
+        round: 16,
+        slug: "italian-grand-prix",
+        localeKey: "italian-grand-prix",
+        sessions: {
+          fp1: "2025-09-05T11:30:00Z",
+          fp2: "2025-09-05T15:00:00Z",
+          fp3: "2025-09-06T10:30:00Z",
+          qualifying: "2025-09-06T14:00:00Z",
+          gp: "2025-09-07T13:00:00Z"
+        }
+      },
+      {
+        name: "Azerbaijan",
+        location: "Baku",
+        latitude: 40.3699,
+        longitude: 49.8433,
+        round: 17,
+        slug: "azerbaijan-grand-prix",
+        localeKey: "azerbaijan-grand-prix",
+        sessions: {
+          fp1: "2025-09-19T08:30:00Z",
+          fp2: "2025-09-19T12:00:00Z",
+          fp3: "2025-09-20T08:30:00Z",
+          qualifying: "2025-09-20T12:00:00Z",
+          gp: "2025-09-21T11:00:00Z"
+        }
+      },
+      {
+        name: "Singapore",
+        location: "Singapore",
+        latitude: 1.2857,
+        longitude: 103.8575,
+        round: 18,
+        slug: "singapore-grand-prix",
+        localeKey: "singapore-grand-prix",
+        sessions: {
+          fp1: "2025-10-03T09:30:00Z",
+          fp2: "2025-10-03T13:00:00Z",
+          fp3: "2025-10-04T09:30:00Z",
+          qualifying: "2025-10-04T13:00:00Z",
+          gp: "2025-10-05T12:00:00Z"
+        }
+      },
+      {
+        name: "United States",
+        location: "Austin",
+        latitude: 30.1328,
+        longitude: -97.6411,
+        round: 19,
+        hasSprint:true,
+        slug: "us-grand-prix",
+        localeKey: "us-grand-prix",
+        sessions: {
+          fp1: "2025-10-17T17:30:00Z",
+          sprintQualifying: "2025-10-17T21:30:00Z",
+          sprint: "2025-10-18T17:00:00Z",
+          qualifying: "2025-10-18T21:00:00Z",
+          gp: "2025-10-19T19:00:00Z"
+        }
+      },
+      {
+        name: "Mexican",
+        location: "Mexico City",
+        latitude: 19.4028,
+        longitude: -99.0986,
+        round: 20,
+        slug: "mexican-grand-prix",
+        localeKey: "mexico-grand-prix",
+        sessions: {
+          fp1: "2025-10-24T18:30:00Z",
+          fp2: "2025-10-24T22:00:00Z",
+          fp3: "2025-10-25T17:30:00Z",
+          qualifying: "2025-10-25T21:00:00Z",
+          gp: "2025-10-26T20:00:00Z"
+        }
+      },
+      {
+        name: "Brazilian",
+        location: "Sao Paulo",
+        latitude: -23.7014,
+        longitude: -46.6969,
+        round: 21,
+        hasSprint:true,
+        slug: "brazilian-grand-prix",
+        localeKey: "brazilian-grand-prix",
+        sessions: {
+          fp1: "2025-11-07T14:30:00Z",
+          sprintQualifying: "2025-11-07T18:30:00Z",
+          sprint: "2025-11-08T14:00:00Z",
+          qualifying: "2025-11-08T18:00:00Z",
+          gp: "2025-11-09T17:00:00Z"
+        }
+      },
+      {
+        name: "Las Vegas",
+        location: "Las Vegas",
+        latitude: 36.166747,
+        longitude: -115.148708,
+        round: 22,
+        slug: "las-vegas-grand-prix",
+        localeKey: "las-vegas-grand-prix",
+        sessions: {
+          fp1: "2025-11-21T00:30:00Z",
+          fp2: "2025-11-21T04:00:00Z",
+          fp3: "2025-11-22T00:30:00Z",
+          qualifying: "2025-11-22T04:00:00Z",
+          gp: "2025-11-23T04:00:00Z"
+        }
+      },
+      {
+        name: "Qatar",
+        location: "Doha",
+        latitude: 25.490292,
+        longitude: 51.45303,
+        round: 23,
+        hasSprint:true,
+        slug: "qatar-grand-prix",
+        localeKey: "qatar-grand-prix",
+        sessions: {
+          fp1: "2025-11-28T13:30:00Z",
+          sprintQualifying: "2025-11-28T17:30:00Z",
+          sprint: "2025-11-29T14:00:00Z",
+          qualifying: "2025-11-29T18:00:00Z",
+          gp: "2025-11-30T16:00:00Z"
+        }
+      },
+      {
+        name: "Abu Dhabi",
+        location: "Yas Marina",
+        latitude: 24.4821,
+        longitude: 54.3482,
+        round: 24,
+        slug: "abu-dhabi-grand-prix",
+        localeKey: "abu-dhabi-grand-prix",
+        sessions: {
+          fp1: "2025-12-05T09:30:00Z",
+          fp2: "2025-12-05T13:00:00Z",
+          fp3: "2025-12-06T10:30:00Z",
+          qualifying: "2025-12-06T14:00:00Z",
+          gp: "2025-12-07T13:00:00Z"
+        }
+      }
+      // Add more races as needed
+    ];
+
+    // Continent and city data
+    const continents = [
+      {
+        name: "Asia",
+        cities: [
+          { name: "Tokyo, Japan", timezone: "Asia/Tokyo" },
+          { name: "Shanghai, China", timezone: "Asia/Shanghai" },
+          { name: "Singapore", timezone: "Asia/Singapore" },
+          { name: "Dubai, UAE", timezone: "Asia/Dubai" },
+          { name: "Mumbai, India", timezone: "Asia/Kolkata" },
+          { name: "Seoul, South Korea", timezone: "Asia/Seoul" },
+          { name: "Bangkok, Thailand", timezone: "Asia/Bangkok" },
+          { name: "Jakarta, Indonesia", timezone: "Asia/Jakarta" }
+        ]
+      },
+      {
+        name: "Europe",
+        cities: [
+          { name: "London, UK", timezone: "Europe/London" },
+          { name: "Paris, France", timezone: "Europe/Paris" },
+          { name: "Berlin, Germany", timezone: "Europe/Berlin" },
+          { name: "Rome, Italy", timezone: "Europe/Rome" },
+          { name: "Madrid, Spain", timezone: "Europe/Madrid" },
+          { name: "Moscow, Russia", timezone: "Europe/Moscow" },
+          { name: "Istanbul, Turkey", timezone: "Europe/Istanbul" },
+          { name: "Amsterdam, Netherlands", timezone: "Europe/Amsterdam" }
+        ]
+      },
+      {
+        name: "North America",
+        cities: [
+          { name: "New York, USA", timezone: "America/New_York" },
+          { name: "Los Angeles, USA", timezone: "America/Los_Angeles" },
+          { name: "Chicago, USA", timezone: "America/Chicago" },
+          { name: "Toronto, Canada", timezone: "America/Toronto" },
+          { name: "Mexico City, Mexico", timezone: "America/Mexico_City" },
+          { name: "Vancouver, Canada", timezone: "America/Vancouver" },
+          { name: "Miami, USA", timezone: "America/New_York" },
+          { name: "Montreal, Canada", timezone: "America/Montreal" }
+        ]
+      },
+      {
+        name: "South America",
+        cities: [
+          { name: "São Paulo, Brazil", timezone: "America/Sao_Paulo" },
+          { name: "Buenos Aires, Argentina", timezone: "America/Argentina/Buenos_Aires" },
+          { name: "Lima, Peru", timezone: "America/Lima" },
+          { name: "Bogotá, Colombia", timezone: "America/Bogota" },
+          { name: "Santiago, Chile", timezone: "America/Santiago" },
+          { name: "Caracas, Venezuela", timezone: "America/Caracas" },
+          { name: "Rio de Janeiro, Brazil", timezone: "America/Sao_Paulo" }
+        ]
+      },
+      {
+        name: "Africa",
+        cities: [
+          { name: "Cairo, Egypt", timezone: "Africa/Cairo" },
+          { name: "Lagos, Nigeria", timezone: "Africa/Lagos" },
+          { name: "Johannesburg, South Africa", timezone: "Africa/Johannesburg" },
+          { name: "Nairobi, Kenya", timezone: "Africa/Nairobi" },
+          { name: "Casablanca, Morocco", timezone: "Africa/Casablanca" },
+          { name: "Addis Ababa, Ethiopia", timezone: "Africa/Addis_Ababa" },
+          { name: "Tunis, Tunisia", timezone: "Africa/Tunis" }
+        ]
+      },
+      {
+        name: "Oceania",
+        cities: [
+          { name: "Sydney, Australia", timezone: "Australia/Sydney" },
+          { name: "Melbourne, Australia", timezone: "Australia/Melbourne" },
+          { name: "Auckland, New Zealand", timezone: "Pacific/Auckland" },
+          { name: "Brisbane, Australia", timezone: "Australia/Brisbane" },
+          { name: "Perth, Australia", timezone: "Australia/Perth" },
+          { name: "Wellington, New Zealand", timezone: "Pacific/Auckland" },
+          { name: "Suva, Fiji", timezone: "Pacific/Fiji" }
+        ]
+      },
+      {
+        name: "Antarctica",
+        cities: [
+          { name: "McMurdo Station (USA)", timezone: "Antarctica/McMurdo" },
+          { name: "Amundsen-Scott South Pole Station (USA)", timezone: "Antarctica/South_Pole" },
+          { name: "Vostok Station (Russia)", timezone: "Antarctica/Vostok" },
+          { name: "Casey Station (Australia)", timezone: "Antarctica/Casey" },
+          { name: "Mawson Station (Australia)", timezone: "Antarctica/Mawson" }
+        ]
+      }
+    ];
+
+    // Global variables
+    let selectedRaceIndex = "";
+    let showRaceTimes = false;
+
+    // Function to format date and time in a specific timezone
+    function formatDateTime(dateString, timezone) {
+      if (!dateString) return "N/A";
+      try {
+        const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+        return new Date(dateString).toLocaleTimeString('en-US', { ...options, timeZone: timezone });
+      } catch (e) {
+        return "Invalid time";
+      }
+    }
+
+    // Function to format date
+    function formatDate(dateString, timezone) {
+      if (!dateString) return "N/A";
+      try {
+        const options = { weekday: 'short', month: 'short', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('en-US', { ...options, timeZone: timezone });
+      } catch (e) {
+        return "Invalid date";
+      }
+    }
+
+    // Function to get current time in a specific timezone
+    function getCurrentTime(timezone) {
+      try {
+        const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+        return new Date().toLocaleTimeString('en-US', { ...options, timeZone: timezone });
+      } catch (e) {
+        return "Unknown";
+      }
+    }
+
+    // Function to create city list items with race session times
+    function createCityListItem(city, race) {
+      let timeDisplay;
+      
+      if (showRaceTimes && race) {
+        timeDisplay = formatDateTime(race.sessions.gp, city.timezone);
+      } else {
+        timeDisplay = getCurrentTime(city.timezone);
+      }
+      
+      let tooltipContent = '';
+      
+      if (race) {
+        let sessionsList = '';
+        if (race.hasSprint) {
+          sessionsList = `
+            FP1: ${formatDate(race.sessions.fp1, city.timezone)} ${formatDateTime(race.sessions.fp1, city.timezone)}<br>
+            Sprint Qualifying: ${formatDate(race.sessions.sprintQualifying, city.timezone)} ${formatDateTime(race.sessions.sprintQualifying, city.timezone)}<br>
+            Sprint: ${formatDate(race.sessions.sprint, city.timezone)} ${formatDateTime(race.sessions.sprint, city.timezone)}<br>
+            Qualifying: ${formatDate(race.sessions.qualifying, city.timezone)} ${formatDateTime(race.sessions.qualifying, city.timezone)}<br>
+            Race: ${formatDate(race.sessions.gp, city.timezone)} ${formatDateTime(race.sessions.gp, city.timezone)}
+          `;
+        } else {
+          sessionsList = `
+            FP1: ${formatDate(race.sessions.fp1, city.timezone)} ${formatDateTime(race.sessions.fp1, city.timezone)}<br>
+            FP2: ${formatDate(race.sessions.fp2, city.timezone)} ${formatDateTime(race.sessions.fp2, city.timezone)}<br>
+            FP3: ${formatDate(race.sessions.fp3, city.timezone)} ${formatDateTime(race.sessions.fp3, city.timezone)}<br>
+            Qualifying: ${formatDate(race.sessions.qualifying, city.timezone)} ${formatDateTime(race.sessions.qualifying, city.timezone)}<br>
+            Race: ${formatDate(race.sessions.gp, city.timezone)} ${formatDateTime(race.sessions.gp, city.timezone)}
+          `;
+        }
+        
+        tooltipContent = `
+          <div class="session-tooltip">
+            <strong>${race.name} in ${city.name}</strong><br>
+            ${sessionsList}
+          </div>
+        `;
+      }
+      
+      return `<li>${city.name} (${timeDisplay})${tooltipContent}</li>`;
+    }
+
+    // Function to create continent boxes with cities and times
+    function createContinentBoxes() {
+      const continentGrid = document.getElementById('continentGrid');
+      continentGrid.innerHTML = '';
+      
+      const race = selectedRaceIndex !== "" ? races[selectedRaceIndex] : null;
+
+      continents.forEach(continent => {
+        const continentBox = document.createElement('div');
+        continentBox.className = 'continent-box';
+        
+        const cityListItems = continent.cities.map(city => 
+          createCityListItem(city, race)
+        ).join('');
+        
+        continentBox.innerHTML = `
+          <h2>${continent.name}</h2>
+          <ul class="city-list">
+            ${cityListItems}
+          </ul>
+        `;
+        
+        continentGrid.appendChild(continentBox);
+      });
+    }
+
+    // Function to populate race dropdown
+    function populateRaceDropdown() {
+      const raceSelect = document.getElementById('raceSelect');
+      
+      races.forEach((race, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `Round ${race.round}: ${race.name}`;
+        raceSelect.appendChild(option);
+      });
+    }
+
+    // Function to display race information
+    function displayRaceInfo(raceIndex) {
+      const raceInfo = document.getElementById('raceInfo');
+      
+      if (raceIndex === "") {
+        raceInfo.style.display = 'none';
+        return;
+      }
+      
+      const race = races[raceIndex];
+      let sessionBoxes = '';
+      
+      if (race.hasSprint) {
+        sessionBoxes = `
+          <div class="session-box">
+            <strong>Practice 1:</strong><br>
+            ${new Date(race.sessions.fp1).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+            ${new Date(race.sessions.fp1).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </div>
+          <div class="session-box">
+            <strong>Sprint Qualifying:</strong><br>
+            ${new Date(race.sessions.sprintQualifying).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+            ${new Date(race.sessions.sprintQualifying).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </div>
+          <div class="session-box">
+            <strong>Sprint Race:</strong><br>
+            ${new Date(race.sessions.sprint).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+            ${new Date(race.sessions.sprint).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </div>
+          <div class="session-box">
+            <strong>Qualifying:</strong><br>
+            ${new Date(race.sessions.qualifying).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+            ${new Date(race.sessions.qualifying).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </div>
+          <div class="session-box">
+            <strong>Race:</strong><br>
+            ${new Date(race.sessions.gp).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+            ${new Date(race.sessions.gp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </div>
+        `;
+      } else {
+        sessionBoxes = `
+          <div class="session-box">
+            <strong>Practice 1:</strong><br>
+            ${new Date(race.sessions.fp1).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+            ${new Date(race.sessions.fp1).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </div>
+          <div class="session-box">
+            <strong>Practice 2:</strong><br>
+            ${new Date(race.sessions.fp2).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+            ${new Date(race.sessions.fp2).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </div>
+          <div class="session-box">
+            <strong>Practice 3:</strong><br>
+            ${new Date(race.sessions.fp3).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+            ${new Date(race.sessions.fp3).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </div>
+          <div class="session-box">
+            <strong>Qualifying:</strong><br>
+            ${new Date(race.sessions.qualifying).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+            ${new Date(race.sessions.qualifying).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </div>
+          <div class="session-box">
+            <strong>Race:</strong><br>
+            ${new Date(race.sessions.gp).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+            ${new Date(race.sessions.gp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </div>
+        `;
+      }
+      
+      raceInfo.innerHTML = `
+        <h2>Round ${race.round}: ${race.name} ${race.hasSprint ? '(Sprint Weekend)' : ''}</h2>
+        <p><strong>Location:</strong> ${race.location}</p>
+        <h3>Session Times (Your Local Time):</h3>
+        <div class="session-grid">
+          ${sessionBoxes}
+        </div>
+      `;
+      
+      raceInfo.style.display = 'block';
+    }
+
+    // Event listener for race selection
+    document.getElementById('raceSelect').addEventListener('change', function() {
+      selectedRaceIndex = this.value;
+      displayRaceInfo(selectedRaceIndex);
+      createContinentBoxes();
+    });
+
+    // Event listener for race times toggle
+    document.getElementById('showRaceTimes').addEventListener('change', function() {
+      showRaceTimes = this.checked;
+      createContinentBoxes();
+    });
+
+    // Function to update times when in current time mode
+    function updateTimes() {
+      if (!showRaceTimes) {
+        createContinentBoxes();
+      }
+    }
+
+    // Initialize the page
+    populateRaceDropdown();
+    createContinentBoxes();
+    
+    // Update times every minute when showing current time
+    setInterval(updateTimes, 60000);
+  </script>
+</body>
+</html>
