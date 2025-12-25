@@ -12,28 +12,21 @@
         <header class="hero">
             <div class="container">
                 <span class="tag">F1 GLOBAL SCHEDULE</span>
-                
-                <h1 id="race-name">Loading Races...</h1>
-                <p id="race-location">Please wait while we fetch the schedule...</p>
-                
-                <div id="error-msg" style="display: none; color: #ff4d4d; font-weight: bold; margin-top: 10px;"></div>
+                <span class="tag">Upcoming GP</span>                
+                <h1 id="race-name">Loading Schedule...</h1>
+                <p id="race-location">Fetching latest race data...</p>
 
                 <div class="controls">
                     <select id="race-dropdown">
-                        <option value="" disabled selected>Change Race</option>
+                        <option value="" disabled selected>Select a Race</option>
                     </select>
-
-                    <select id="city-dropdown">
-                        <option value="" disabled selected>Add City Timezone</option>
-                    </select>
-
-                    <button id="reset-btn" onclick="clearCities()">Reset View</button>
                 </div>
             </div>
         </header>
 
-        <main class="container grid" id="timezone-grid">
-            </main>
+        <main class="container">
+            <div id="continent-grid" class="continent-grid"></div>
+        </main>
     </div>
 
     <script src="script.js"></script>
