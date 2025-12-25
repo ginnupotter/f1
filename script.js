@@ -1,16 +1,3 @@
-const raceData = [
-    {
-      name: "Australian",
-      location: "Melbourne",
-      sessions: { fp1: "2026-03-06T01:30:00Z", fp2: "2026-03-06T05:00:00Z", fp3: "2026-03-07T01:30:00Z", qualifying: "2026-03-07T05:00:00Z", gp: "2026-03-08T04:00:00Z" }
-    },
-    {
-      name: "Chinese",
-      location: "Shanghai",
-      sessions: { fp1: "2026-03-13T03:30:00Z", sprintQualifying: "2026-03-13T07:30:00Z", sprint: "2026-03-14T03:00:00Z", qualifying: "2026-03-14T07:00:00Z", gp: "2026-03-15T07:00:00Z" }
-    }
-];
-
 const continents = [
     { name: "Europe", tz: "Europe/London", label: "UK / GMT" },
     { name: "Europe (Central)", tz: "Europe/Paris", label: "CET" },
@@ -20,45 +7,63 @@ const continents = [
     { name: "Australia", tz: "Australia/Melbourne", label: "AEDT" }
 ];
 
-function init() {
-    // 1. Find the next race (first race where GP time > now)
-    const now = new Date();
-    const nextRace = raceData.find(r => new Date(r.sessions.gp) > now) || raceData[0];
+async function loadRacePage() {
+    try {
+        // 1. Fetch the data from the external JSON file
+        const response = await fetch('races.json');
+        if (!response.ok) throw new Error("Could not load race data.");
+        const raceData = await response.json();
 
-    // 2. Update Hero
-    document.getElementById('race-name').innerText = `${nextRace.name} Grand Prix`;
-    document.getElementById('race-location').innerText = nextRace.location;
+        // 2. Find the next race
+        const now = new Date();
+        const nextRace = raceData.find(r => new Date(r.sessions.gp) > now) || raceData[0];
 
-    // 3. Generate Continent Boxes
-    const grid = document.getElementById('timezone-grid');
-    
-    continents.forEach(cont => {
-        const box = document.createElement('div');
-        box.className = 'continent-box';
-        
-        let sessionsHtml = `<h3>${cont.name} <small style="font-size:0.6em; color:gray">(${cont.label})</small></h3>`;
-        
-        for (const [session, utcTime] of Object.entries(nextRace.sessions)) {
-            const localTime = new Date(utcTime).toLocaleTimeString('en-GB', {
-                timeZone: cont.tz,
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            const localDate = new Date(utcTime).toLocaleDateString('en-GB', {
-                timeZone: cont.tz,
-                weekday: 'short'
-            });
+        // 3. Update Hero Section
+        document.getElementById('race-name').innerText = `${nextRace.name} Grand Prix`;
+        document.getElementById('race-location').innerText = nextRace.location;
 
-            sessionsHtml += `
-                <div class="session-row">
-                    <span class="session-name">${session}</span>
-                    <span class="session-time">${localDate} ${localTime}</span>
-                </div>`;
-        }
-        
-        box.innerHTML = sessionsHtml;
-        grid.appendChild(box);
-    });
+        // 4. Generate Continent Boxes
+        const grid = document.getElementById('timezone-grid');
+        grid.innerHTML = ''; // Clear "Loading..." text
+
+        continents.forEach(cont => {
+            const box = document.createElement('div');
+            box.className = 'continent-box';
+            
+            let sessionsHtml = `<h3>${cont.name} <small style="font-size:0.6em; color:gray">(${cont.label})</small></h3>`;
+            
+            // Loop through the sessions object in the JSON
+            for (const [session, utcTime] of Object.entries(nextRace.sessions)) {
+                const dateObj = new Date(utcTime);
+                
+                const localTime = dateObj.toLocaleTimeString('en-GB', {
+                    timeZone: cont.tz,
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                const localDate = dateObj.toLocaleDateString('en-GB', {
+                    timeZone: cont.tz,
+                    weekday: 'short',
+                    day: '2-digit',
+                    month: 'short'
+                });
+
+                sessionsHtml += `
+                    <div class="session-row">
+                        <span class="session-name">${session.replace(/([A-Z])/g, ' $1')}</span>
+                        <span class="session-time">${localDate} — ${localTime}</span>
+                    </div>`;
+            }
+            
+            box.innerHTML = sessionsHtml;
+            grid.appendChild(box);
+        });
+
+    } catch (error) {
+        console.error("Error:", error);
+        document.getElementById('race-name').innerText = "Error loading schedule";
+    }
 }
 
-init();
+loadRacePage();
