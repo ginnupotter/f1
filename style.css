@@ -3,7 +3,6 @@
     --dark-bg: #15151e;
     --card-bg: #1e1e27;
     --text-main: #ffffff;
-    --text-dim: #949498;
 }
 
 body {
@@ -15,11 +14,11 @@ body {
 
 .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
-/* Hero */
-.hero { background: #15151e; padding: 40px 0; text-align: center; border-bottom: 4px solid var(--f1-red); }
-h1 { font-size: 2.5rem; text-transform: uppercase; margin: 10px 0; }
+/* Hero Section */
+.hero { background: #15151e; padding: 40px 20px; text-align: center; border-bottom: 4px solid var(--f1-red); }
+h1 { font-size: 2.2rem; text-transform: uppercase; margin: 10px 0; }
 
-/* Grid */
+/* Continent Grid */
 .continent-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -31,57 +30,62 @@ h1 { font-size: 2.5rem; text-transform: uppercase; margin: 10px 0; }
     background: var(--card-bg);
     border-radius: 8px;
     padding: 15px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    border-top: 2px solid #333;
 }
 
-/* City Item & Tooltip logic */
+.continent-box h3 { color: var(--f1-red); text-transform: uppercase; font-size: 1rem; margin-top: 0; }
+
+/* City Item */
 .city-item {
-    padding: 10px;
+    padding: 12px;
     cursor: pointer;
-    position: relative;
     border-bottom: 1px solid #2a2a35;
-    transition: 0.2s;
+    position: relative;
 }
 
-.city-item:hover { background: #2d2d3a; color: var(--f1-red); }
+.city-item:hover { background: #2d2d3a; }
 
+/* THE FIX: MOBILE-FIRST TOOLTIP */
 .session-tooltip {
     display: none;
-    position: absolute;
+    position: fixed; /* Fixes to screen, not the city name */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     background: white;
     color: #111;
-    padding: 15px;
-    border-radius: 8px;
-    width: 260px;
-    z-index: 9999;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-    pointer-events: none; /* Prevents flickering */
+    padding: 20px;
+    border-radius: 12px;
+    width: 85vw; /* Almost full width on mobile */
+    max-width: 300px;
+    z-index: 10000;
+    box-shadow: 0 0 0 1000px rgba(0,0,0,0.7); /* Dims background */
 }
 
-/* SMART POSITIONING CLASSES (Toggled by JS) */
-.tooltip-right { left: 105%; top: 0; }
-.tooltip-left { right: 105%; top: 0; }
-.tooltip-bottom { left: 50%; top: 110%; transform: translateX(-50%); }
+/* DESKTOP REVERSION: Tooltip appears next to city */
+@media (min-width: 1024px) {
+    .session-tooltip {
+        position: absolute;
+        top: 0;
+        left: 105%;
+        transform: none;
+        width: 260px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    
+    /* Flip to left if in the right-most column */
+    .continent-box:nth-child(3n) .session-tooltip {
+        left: auto;
+        right: 105%;
+    }
+}
 
 .city-item:hover .session-tooltip { display: block; }
 
 .tooltip-row {
     display: flex;
     justify-content: space-between;
-    padding: 5px 0;
+    padding: 8px 0;
     border-bottom: 1px solid #eee;
-    font-size: 0.85rem;
 }
-.session-label { font-weight: bold; }
-.session-val { color: var(--f1-red); }
-
-/* Mobile Fix */
-@media (max-width: 768px) {
-    .session-tooltip {
-        position: fixed;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        width: 80vw;
-    }
-}
+.session-val { color: var(--f1-red); font-weight: bold; }
