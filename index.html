@@ -7,18 +7,35 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div id="app">
         <header class="hero">
             <div class="container">
-                <p class="tag">UP NEXT</p>
-                <h1 id="race-name">Loading...</h1>
-                <p id="race-location"></p>
+                <span class="tag">F1 GLOBAL SCHEDULE</span>
+                
+                <h1 id="race-name">Loading Races...</h1>
+                <p id="race-location">Please wait while we fetch the schedule...</p>
+                
+                <div id="error-msg" style="display: none; color: #ff4d4d; font-weight: bold; margin-top: 10px;"></div>
+
+                <div class="controls">
+                    <select id="race-dropdown">
+                        <option value="" disabled selected>Change Race</option>
+                    </select>
+
+                    <select id="city-dropdown">
+                        <option value="" disabled selected>Add City Timezone</option>
+                    </select>
+
+                    <button id="reset-btn" onclick="clearCities()">Reset View</button>
+                </div>
             </div>
         </header>
 
         <main class="container grid" id="timezone-grid">
             </main>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
