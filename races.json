@@ -1,5 +1,5 @@
 [
-          {
+ {
       name: "Australian",
       location: "Melbourne",
       latitude: -37.8373,
@@ -382,4 +382,5 @@
         qualifying: "2026-12-05T14:00:00Z",
         gp: "2026-12-06T13:00:00Z"
       }
+}
 ]
