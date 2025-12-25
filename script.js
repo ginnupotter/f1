@@ -1,69 +1,96 @@
-const continents = [
-    { name: "Europe", tz: "Europe/London", label: "UK / GMT" },
-    { name: "Europe (Central)", tz: "Europe/Paris", label: "CET" },
-    { name: "Americas (East)", tz: "America/New_York", label: "ET" },
-    { name: "Americas (West)", tz: "America/Los_Angeles", label: "PT" },
-    { name: "Asia", tz: "Asia/Tokyo", label: "JST" },
-    { name: "Australia", tz: "Australia/Melbourne", label: "AEDT" }
-];
+let allRaces = [];
+let activeTimezones = []; // Stores the timezones the user has added
 
-async function loadRacePage() {
+async function init() {
     try {
-        // 1. Fetch the data from the external JSON file
         const response = await fetch('races.json');
-        if (!response.ok) throw new Error("Could not load race data.");
-        const raceData = await response.json();
+        if (!response.ok) throw new Error("Check if races.json is in your GitHub repo.");
+        allRaces = await response.json();
 
-        // 2. Find the next race
+        setupRaceDropdown();
+        setupCityDropdown();
+        
+        // Default: Show the next race in the user's current local timezone
         const now = new Date();
-        const nextRace = raceData.find(r => new Date(r.sessions.gp) > now) || raceData[0];
-
-        // 3. Update Hero Section
-        document.getElementById('race-name').innerText = `${nextRace.name} Grand Prix`;
-        document.getElementById('race-location').innerText = nextRace.location;
-
-        // 4. Generate Continent Boxes
-        const grid = document.getElementById('timezone-grid');
-        grid.innerHTML = ''; // Clear "Loading..." text
-
-        continents.forEach(cont => {
-            const box = document.createElement('div');
-            box.className = 'continent-box';
-            
-            let sessionsHtml = `<h3>${cont.name} <small style="font-size:0.6em; color:gray">(${cont.label})</small></h3>`;
-            
-            // Loop through the sessions object in the JSON
-            for (const [session, utcTime] of Object.entries(nextRace.sessions)) {
-                const dateObj = new Date(utcTime);
-                
-                const localTime = dateObj.toLocaleTimeString('en-GB', {
-                    timeZone: cont.tz,
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                
-                const localDate = dateObj.toLocaleDateString('en-GB', {
-                    timeZone: cont.tz,
-                    weekday: 'short',
-                    day: '2-digit',
-                    month: 'short'
-                });
-
-                sessionsHtml += `
-                    <div class="session-row">
-                        <span class="session-name">${session.replace(/([A-Z])/g, ' $1')}</span>
-                        <span class="session-time">${localDate} — ${localTime}</span>
-                    </div>`;
-            }
-            
-            box.innerHTML = sessionsHtml;
-            grid.appendChild(box);
-        });
-
-    } catch (error) {
-        console.error("Error:", error);
-        document.getElementById('race-name').innerText = "Error loading schedule";
+        const nextRace = allRaces.find(r => new Date(r.sessions.gp) > now) || allRaces[0];
+        const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        activeTimezones.push(userTz);
+        
+        updateUI(nextRace);
+    } catch (err) {
+        document.getElementById('race-name').innerText = "Load Failed";
+        console.error(err);
     }
 }
 
-loadRacePage();
+function setupRaceDropdown() {
+    const drp = document.getElementById('race-dropdown');
+    allRaces.forEach((race, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${race.round}. ${race.name} GP`;
+        drp.appendChild(opt);
+    });
+    drp.addEventListener('change', () => updateUI(allRaces[drp.value]));
+}
+
+function setupCityDropdown() {
+    const drp = document.getElementById('city-dropdown');
+    // Gets all 400+ IANA timezones (e.g., "Europe/London", "Asia/Tokyo")
+    const zones = Intl.supportedValuesOf('timeZone');
+
+    zones.forEach(zone => {
+        const opt = document.createElement('option');
+        opt.value = zone;
+        // Clean up the name for the dropdown (e.g., "America/New_York" -> "New York")
+        opt.textContent = zone.split('/').pop().replace(/_/g, ' ');
+        drp.appendChild(opt);
+    });
+
+    drp.addEventListener('change', (e) => {
+        if (!activeTimezones.includes(e.target.value)) {
+            activeTimezones.push(e.target.value);
+            const selectedIdx = document.getElementById('race-dropdown').value || 0;
+            updateUI(allRaces[selectedIdx]);
+        }
+    });
+}
+
+function updateUI(race) {
+    document.getElementById('race-name').innerText = `${race.name} Grand Prix`;
+    document.getElementById('race-location').innerText = race.location;
+    
+    const grid = document.getElementById('timezone-grid');
+    grid.innerHTML = '';
+
+    activeTimezones.forEach(tz => {
+        const box = document.createElement('div');
+        box.className = 'continent-box';
+        
+        const cityName = tz.split('/').pop().replace(/_/g, ' ');
+        let html = `<h3>${cityName} <small style="display:block; font-size:12px; color:gray">${tz}</small></h3>`;
+        
+        for (const [session, time] of Object.entries(race.sessions)) {
+            const date = new Date(time);
+            // Formats to 24hr time in the SPECIFIC chosen timezone
+            const timeStr = date.toLocaleTimeString('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
+            const dayStr = date.toLocaleDateString('en-GB', { timeZone: tz, weekday: 'short', day: '2-digit', month: 'short' });
+
+            html += `
+                <div class="session-row">
+                    <span class="session-name">${session.toUpperCase()}</span>
+                    <span class="session-time"><strong>${dayStr}</strong> — ${timeStr}</span>
+                </div>`;
+        }
+        box.innerHTML = html;
+        grid.appendChild(box);
+    });
+}
+
+function clearCities() {
+    activeTimezones = [Intl.DateTimeFormat().resolvedOptions().timeZone];
+    const selectedIdx = document.getElementById('race-dropdown').value || 0;
+    updateUI(allRaces[selectedIdx]);
+}
+
+init();
