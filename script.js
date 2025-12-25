@@ -2,51 +2,50 @@ const continentData = {
     "North America": [
         { name: "Honolulu", tz: "Pacific/Honolulu" },
         { name: "Anchorage", tz: "America/Anchorage" },
-        { name: "Los Angeles", tz: "America/Los_Angeles" },
+        { name: "Vancouver", tz: "America/Vancouver" },
         { name: "Denver", tz: "America/Denver" },
-        { name: "Chicago", tz: "America/Chicago" },
+        { name: "Mexico City", tz: "America/Mexico_City" },
         { name: "New York", tz: "America/New_York" },
         { name: "St. John's", tz: "America/St_Johns" }
     ],
     "South America": [
+        { name: "Galapagos", tz: "Pacific/Galapagos" },
         { name: "Lima", tz: "America/Lima" },
-        { name: "Caracas", tz: "America/Caracas" },
-        { name: "Manaus", tz: "America/Manaus" },
+        { name: "La Paz", tz: "America/La_Paz" },
         { name: "Santiago", tz: "America/Santiago" },
         { name: "Buenos Aires", tz: "America/Argentina/Buenos_Aires" },
         { name: "São Paulo", tz: "America/Sao_Paulo" },
         { name: "Fernando de Noronha", tz: "America/Noronha" }
     ],
     "Europe": [
-        { name: "Amsterdam", tz: "Europe/Amsterdam" },
+        { name: "Reykjavik", tz: "Atlantic/Reykjavik" },
         { name: "London", tz: "Europe/London" },
-        { name: "Paris", tz: "Europe/Paris" },
-        { name: "Berlin", tz: "Europe/Berlin" },
+        { name: "Amsterdam", tz: "Europe/Amsterdam" },
+        { name: "Helsinki", tz: "Europe/Helsinki" },
         { name: "Athens", tz: "Europe/Athens" },
-        { name: "Istanbul", tz: "Europe/Istanbul" },
-        { name: "Azores", tz: "Atlantic/Azores" }
+        { name: "Istanbul", tz: "Europe/Istanbul" }
     ],
     "Asia & Oceania": [
         { name: "Dubai", tz: "Asia/Dubai" },
-        { name: "Kabul", tz: "Asia/Kabul" },
         { name: "Delhi", tz: "Asia/Kolkata" },
         { name: "Kathmandu", tz: "Asia/Kathmandu" },
+        { name: "Bangkok", tz: "Asia/Bangkok" },
         { name: "Singapore", tz: "Asia/Singapore" },
         { name: "Tokyo", tz: "Asia/Tokyo" },
-        { name: "Darwin", tz: "Australia/Darwin" },
         { name: "Adelaide", tz: "Australia/Adelaide" },
         { name: "Sydney", tz: "Australia/Sydney" },
         { name: "Auckland", tz: "Pacific/Auckland" },
         { name: "Chatham Islands", tz: "Pacific/Chatham" },
-        { name: "Kiritimati", tz: "Pacific/Kiritimati" }
     ],
     "Middle East & Africa": [
+        { name: "Cape Verde", tz: "Atlantic/Cape_Verde" },
+        { name: "Casablanca", tz: "Africa/Casablanca" },
+        { name: "Lagos", tz: "Africa/Lagos" },
+        { name: "Cairo", tz: "Africa/Cairo" },
+        { name: "Nairobi", tz: "Africa/Nairobi" },
         { name: "Riyadh", tz: "Asia/Riyadh" },
         { name: "Tehran", tz: "Asia/Tehran" },
-        { name: "Cairo", tz: "Africa/Cairo" },
-        { name: "Johannesburg", tz: "Africa/Johannesburg" },
-        { name: "Lagos", tz: "Africa/Lagos" },
-        { name: "Cape Verde", tz: "Atlantic/Cape_Verde" }
+        { name: "Seychelles", tz: "Indian/Mahe" }
     ]
 };
 
@@ -56,25 +55,21 @@ async function init() {
     try {
         const response = await fetch('races.json');
         allRaces = await response.json();
-        const dropdown = document.getElementById('race-dropdown');
-        
-        allRaces.forEach((race, index) => {
+        const drp = document.getElementById('race-dropdown');
+        allRaces.forEach((r, i) => {
             const opt = document.createElement('option');
-            opt.value = index;
-            opt.textContent = race.name;
-            dropdown.appendChild(opt);
+            opt.value = i; opt.textContent = r.name;
+            drp.appendChild(opt);
         });
-
         updateUI(0);
-        dropdown.addEventListener('change', (e) => updateUI(e.target.value));
-    } catch (err) { console.error("Data Load Error", err); }
+        drp.addEventListener('change', (e) => updateUI(e.target.value));
+    } catch (e) { console.error(e); }
 }
 
-function updateUI(index) {
-    const race = allRaces[index];
-    document.getElementById('race-name').textContent = race.name;
+function updateUI(idx) {
+    const race = allRaces[idx];
+    document.getElementById('race-name').textContent = race.name + " GP";
     document.getElementById('race-location').textContent = race.location;
-
     const grid = document.getElementById('continent-grid');
     grid.innerHTML = '';
 
@@ -82,44 +77,45 @@ function updateUI(index) {
         const box = document.createElement('div');
         box.className = 'continent-box';
         box.innerHTML = `<h3>${continent}</h3>`;
-
+        
         cities.forEach(city => {
-            const cityEl = document.createElement('div');
-            cityEl.className = 'city-item';
-            cityEl.innerHTML = `<span>${city.name}</span>`;
+            const item = document.createElement('div');
+            item.className = 'city-item';
+            item.innerHTML = `<span>${city.name}</span>`;
 
             const tooltip = document.createElement('div');
             tooltip.className = 'session-tooltip';
             let content = `<strong>${city.name}</strong><br>`;
-
-            for (const [session, time] of Object.entries(race.sessions)) {
-                const date = new Date(time);
+            
+            for (const [s, t] of Object.entries(race.sessions)) {
+                const date = new Date(t);
                 const timeStr = date.toLocaleTimeString('en-GB', { timeZone: city.tz, hour: '2-digit', minute: '2-digit' });
                 const dayStr = date.toLocaleDateString('en-GB', { timeZone: city.tz, weekday: 'short' });
-                content += `<div class="tooltip-row"><span class="session-label">${session.toUpperCase()}</span><span class="session-val">${dayStr} ${timeStr}</span></div>`;
+                content += `<div class="tooltip-row"><span>${s.toUpperCase()}</span><span class="session-val">${dayStr} ${timeStr}</span></div>`;
             }
             tooltip.innerHTML = content;
-            cityEl.appendChild(tooltip);
+            item.appendChild(tooltip);
 
-            // SMART PLACEMENT LOGIC
-            cityEl.addEventListener('mouseenter', () => {
-                tooltip.style.display = 'block';
-                const rect = tooltip.getBoundingClientRect();
-                // If tooltip goes off the right side of the screen
-                if (rect.right > window.innerWidth) {
-                    tooltip.style.left = 'auto';
-                    tooltip.style.right = '105%';
+            // COLLISION DETECTION LOGIC
+            item.addEventListener('mouseenter', () => {
+                const rect = item.getBoundingClientRect();
+                const screenWidth = window.innerWidth;
+                
+                // Reset classes
+                tooltip.classList.remove('tooltip-left', 'tooltip-right', 'tooltip-bottom');
+                
+                if (screenWidth < 768) {
+                    // Handled by CSS fixed positioning
+                } else if (rect.right + 260 > screenWidth) {
+                    tooltip.classList.add('tooltip-left');
                 } else {
-                    tooltip.style.left = '105%';
-                    tooltip.style.right = 'auto';
+                    tooltip.classList.add('tooltip-right');
                 }
             });
 
-            cityEl.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
-            box.appendChild(cityEl);
+            box.appendChild(item);
         });
         grid.appendChild(box);
     }
 }
-
 init();
