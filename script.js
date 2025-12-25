@@ -2,9 +2,9 @@ const continentData = {
     "North America": [
         { name: "Honolulu", tz: "Pacific/Honolulu" },
         { name: "Anchorage", tz: "America/Anchorage" },
-        { name: "Vancouver", tz: "America/Vancouver" },
+        { name: "Los Angeles", tz: "America/Los_Angeles" },
         { name: "Denver", tz: "America/Denver" },
-        { name: "Mexico City", tz: "America/Mexico_City" },
+        { name: "Chicago", tz: "America/Chicago" },
         { name: "New York", tz: "America/New_York" },
         { name: "St. John's", tz: "America/St_Johns" }
     ],
@@ -14,38 +14,34 @@ const continentData = {
         { name: "La Paz", tz: "America/La_Paz" },
         { name: "Santiago", tz: "America/Santiago" },
         { name: "Buenos Aires", tz: "America/Argentina/Buenos_Aires" },
-        { name: "São Paulo", tz: "America/Sao_Paulo" },
-        { name: "Fernando de Noronha", tz: "America/Noronha" }
+        { name: "São Paulo", tz: "America/Sao_Paulo" }
     ],
-    "Europe": [
-        { name: "Reykjavik", tz: "Atlantic/Reykjavik" },
+    "Europe & Africa": [
         { name: "London", tz: "Europe/London" },
         { name: "Amsterdam", tz: "Europe/Amsterdam" },
-        { name: "Helsinki", tz: "Europe/Helsinki" },
         { name: "Athens", tz: "Europe/Athens" },
-        { name: "Istanbul", tz: "Europe/Istanbul" }
+        { name: "Istanbul", tz: "Europe/Istanbul" },
+        { name: "Lagos", tz: "Africa/Lagos" },
+        { name: "Cairo", tz: "Africa/Cairo" },
+        { name: "Johannesburg", tz: "Africa/Johannesburg" }
     ],
-    "Asia & Oceania": [
+    "Asia": [
         { name: "Dubai", tz: "Asia/Dubai" },
+        { name: "Tehran", tz: "Asia/Tehran" },
+        { name: "Kabul", tz: "Asia/Kabul" },
         { name: "Delhi", tz: "Asia/Kolkata" },
         { name: "Kathmandu", tz: "Asia/Kathmandu" },
         { name: "Bangkok", tz: "Asia/Bangkok" },
         { name: "Singapore", tz: "Asia/Singapore" },
-        { name: "Tokyo", tz: "Asia/Tokyo" },
+        { name: "Tokyo", tz: "Asia/Tokyo" }
+    ],
+    "Oceania": [
+        { name: "Perth", tz: "Australia/Perth" },
+        { name: "Eucla", tz: "Australia/Eucla" },
         { name: "Adelaide", tz: "Australia/Adelaide" },
         { name: "Sydney", tz: "Australia/Sydney" },
         { name: "Auckland", tz: "Pacific/Auckland" },
-        { name: "Chatham Islands", tz: "Pacific/Chatham" },
-    ],
-    "Middle East & Africa": [
-        { name: "Cape Verde", tz: "Atlantic/Cape_Verde" },
-        { name: "Casablanca", tz: "Africa/Casablanca" },
-        { name: "Lagos", tz: "Africa/Lagos" },
-        { name: "Cairo", tz: "Africa/Cairo" },
-        { name: "Nairobi", tz: "Africa/Nairobi" },
-        { name: "Riyadh", tz: "Asia/Riyadh" },
-        { name: "Tehran", tz: "Asia/Tehran" },
-        { name: "Seychelles", tz: "Indian/Mahe" }
+        { name: "Chatham Islands", tz: "Pacific/Chatham" }
     ]
 };
 
@@ -63,12 +59,12 @@ async function init() {
         });
         updateUI(0);
         drp.addEventListener('change', (e) => updateUI(e.target.value));
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Error loading JSON", e); }
 }
 
 function updateUI(idx) {
     const race = allRaces[idx];
-    document.getElementById('race-name').textContent = race.name + " GP";
+    document.getElementById('race-name').textContent = race.name + " Grand Prix";
     document.getElementById('race-location').textContent = race.location;
     const grid = document.getElementById('continent-grid');
     grid.innerHTML = '';
@@ -85,34 +81,16 @@ function updateUI(idx) {
 
             const tooltip = document.createElement('div');
             tooltip.className = 'session-tooltip';
-            let content = `<strong>${city.name}</strong><br>`;
+            let content = `<h4 style="margin:0 0 10px 0">${city.name}</h4>`;
             
             for (const [s, t] of Object.entries(race.sessions)) {
                 const date = new Date(t);
                 const timeStr = date.toLocaleTimeString('en-GB', { timeZone: city.tz, hour: '2-digit', minute: '2-digit' });
-                const dayStr = date.toLocaleDateString('en-GB', { timeZone: city.tz, weekday: 'short' });
+                const dayStr = date.toLocaleDateString('en-GB', { timeZone: city.tz, weekday: 'short', day: '2-digit' });
                 content += `<div class="tooltip-row"><span>${s.toUpperCase()}</span><span class="session-val">${dayStr} ${timeStr}</span></div>`;
             }
             tooltip.innerHTML = content;
             item.appendChild(tooltip);
-
-            // COLLISION DETECTION LOGIC
-            item.addEventListener('mouseenter', () => {
-                const rect = item.getBoundingClientRect();
-                const screenWidth = window.innerWidth;
-                
-                // Reset classes
-                tooltip.classList.remove('tooltip-left', 'tooltip-right', 'tooltip-bottom');
-                
-                if (screenWidth < 768) {
-                    // Handled by CSS fixed positioning
-                } else if (rect.right + 260 > screenWidth) {
-                    tooltip.classList.add('tooltip-left');
-                } else {
-                    tooltip.classList.add('tooltip-right');
-                }
-            });
-
             box.appendChild(item);
         });
         grid.appendChild(box);
