@@ -3,32 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Global Race Timings</title>
+    <title>F1 Global Race Timings - Full Coverage</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div id="app">
-        <header class="hero">
-            <div class="container">
-                <span class="tag">F1 GLOBAL SCHEDULE</span>
-                <h1 id="race-name">Loading Schedule...</h1>
-                <p id="race-location">Fetching latest race data...</p>
-
-                <div class="controls">
-                    <select id="race-dropdown">
-                        <option value="" disabled selected>Select a Race</option>
-                    </select>
-                </div>
+    <header class="hero">
+        <div class="container">
+            <span class="tag">F1 GLOBAL SCHEDULE</span>
+            <h1 id="race-name">Loading...</h1>
+            <p id="race-location">Detecting next race...</p>
+            <div class="controls">
+                <select id="race-dropdown"></select>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <main class="container">
-            <div id="continent-grid" class="continent-grid"></div>
-        </main>
-    </div>
+    <main class="container">
+        <div id="continent-grid" class="continent-grid"></div>
+    </main>
 
     <script src="script.js"></script>
 </body>
 </html>
-
