@@ -9,39 +9,33 @@ const continentData = {
         { name: "St. John's", tz: "America/St_Johns" }
     ],
     "South America": [
-        { name: "Galapagos", tz: "Pacific/Galapagos" },
         { name: "Lima", tz: "America/Lima" },
-        { name: "La Paz", tz: "America/La_Paz" },
         { name: "Santiago", tz: "America/Santiago" },
         { name: "Buenos Aires", tz: "America/Argentina/Buenos_Aires" },
-        { name: "São Paulo", tz: "America/Sao_Paulo" }
+        { name: "São Paulo", tz: "America/Sao_Paulo" },
+        { name: "Fernando de Noronha", tz: "America/Noronha" }
     ],
     "Europe & Africa": [
         { name: "London", tz: "Europe/London" },
         { name: "Amsterdam", tz: "Europe/Amsterdam" },
         { name: "Athens", tz: "Europe/Athens" },
         { name: "Istanbul", tz: "Europe/Istanbul" },
-        { name: "Lagos", tz: "Africa/Lagos" },
         { name: "Cairo", tz: "Africa/Cairo" },
         { name: "Johannesburg", tz: "Africa/Johannesburg" }
     ],
-    "Asia": [
+    "Asia & Oceania": [
         { name: "Dubai", tz: "Asia/Dubai" },
-        { name: "Tehran", tz: "Asia/Tehran" },
         { name: "Kabul", tz: "Asia/Kabul" },
         { name: "Delhi", tz: "Asia/Kolkata" },
         { name: "Kathmandu", tz: "Asia/Kathmandu" },
-        { name: "Bangkok", tz: "Asia/Bangkok" },
         { name: "Singapore", tz: "Asia/Singapore" },
-        { name: "Tokyo", tz: "Asia/Tokyo" }
-    ],
-    "Oceania": [
-        { name: "Perth", tz: "Australia/Perth" },
+        { name: "Tokyo", tz: "Asia/Tokyo" },
         { name: "Eucla", tz: "Australia/Eucla" },
         { name: "Adelaide", tz: "Australia/Adelaide" },
         { name: "Sydney", tz: "Australia/Sydney" },
         { name: "Auckland", tz: "Pacific/Auckland" },
-        { name: "Chatham Islands", tz: "Pacific/Chatham" }
+        { name: "Chatham Islands", tz: "Pacific/Chatham" },
+        { name: "Kiritimati", tz: "Pacific/Kiritimati" }
     ]
 };
 
@@ -59,7 +53,7 @@ async function init() {
         });
         updateUI(0);
         drp.addEventListener('change', (e) => updateUI(e.target.value));
-    } catch (e) { console.error("Error loading JSON", e); }
+    } catch (e) { console.error("Error", e); }
 }
 
 function updateUI(idx) {
@@ -81,16 +75,40 @@ function updateUI(idx) {
 
             const tooltip = document.createElement('div');
             tooltip.className = 'session-tooltip';
-            let content = `<h4 style="margin:0 0 10px 0">${city.name}</h4>`;
             
+            // X Button for Mobile
+            const closeBtn = document.createElement('span');
+            closeBtn.className = 'close-tooltip';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.onclick = (e) => { e.stopPropagation(); tooltip.style.display = 'none'; };
+            tooltip.appendChild(closeBtn);
+
+            let content = `<h4 style="margin:0 0 10px 0">${city.name}</h4>`;
             for (const [s, t] of Object.entries(race.sessions)) {
                 const date = new Date(t);
                 const timeStr = date.toLocaleTimeString('en-GB', { timeZone: city.tz, hour: '2-digit', minute: '2-digit' });
                 const dayStr = date.toLocaleDateString('en-GB', { timeZone: city.tz, weekday: 'short', day: '2-digit' });
                 content += `<div class="tooltip-row"><span>${s.toUpperCase()}</span><span class="session-val">${dayStr} ${timeStr}</span></div>`;
             }
-            tooltip.innerHTML = content;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.innerHTML = content;
+            tooltip.appendChild(contentDiv);
             item.appendChild(tooltip);
+
+            // PC HOVER LOGIC WITH BOUNDARY CHECK
+            item.onmouseenter = () => {
+                tooltip.style.display = 'block';
+                if (window.innerWidth >= 1024) {
+                    const rect = tooltip.getBoundingClientRect();
+                    if (rect.right > window.innerWidth) {
+                        tooltip.style.left = 'auto';
+                        tooltip.style.right = '105%';
+                    }
+                }
+            };
+            item.onmouseleave = () => { if (window.innerWidth >= 1024) tooltip.style.display = 'none'; };
+
             box.appendChild(item);
         });
         grid.appendChild(box);
