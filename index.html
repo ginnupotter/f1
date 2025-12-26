@@ -10,30 +10,20 @@
 
     <header class="hero">
         <div class="container">
-            <span class="tag">F1 GLOBAL SCHEDULE</span>
+            <div id="next-badge" class="badge">NEXT GRAND PRIX</div>
             <h1 id="race-name">Loading...</h1>
-            <p id="race-location">Detecting next race data...</p>
+            
+            <div class="location-box">
+                <span class="pin">📍</span>
+                <span id="race-location">Detecting...</span>
+            </div>
 
-            <div class="controls">
-                <select id="race-dropdown">
-                    </select>
+            <div class="slider-wrapper">
+                <div id="race-slider" class="race-slider">
+                    </div>
             </div>
         </div>
     </header>
-
-    <section class="guidelines">
-        <div class="container">
-            <div class="guide-card">
-                <h3>🏁 How to use this guide</h3>
-                <ul>
-                    <li><strong>Default View:</strong> The page automatically displays the <strong>next upcoming race</strong> based on the current date.</li>
-                    <li><strong>Change Race:</strong> Use the dropdown above to view timings for any Grand Prix in the season.</li>
-                    <li><strong>Check Timings:</strong> Find your continent and <strong>hover over (or tap)</strong> the city closest to you.</li>
-                    <li><strong>Full Details:</strong> Popups display local dates, months, and exact session times for your region.</li>
-                </ul>
-            </div>
-        </div>
-    </section>
 
     <main class="container">
         <div id="continent-grid" class="continent-grid"></div>
