@@ -1,6 +1,6 @@
-/* F1 GLOBAL TIMINGS - COMPLETE STYLESHEET
-   --------------------------------------
-   Variables, Reset, Hero, Slider, and Responsive Tooltips
+/* F1 GLOBAL TIMINGS - CONSOLIDATED STYLESHEET 2025
+   -----------------------------------------------
+   Features: Horizontal Slider, Responsive Modals, Overflow Prevention
 */
 
 :root {
@@ -8,13 +8,13 @@
     --dark-bg: #15151e;
     --card-bg: #1e1e27;
     --text-main: #ffffff;
-    --text-muted: #999999;
-    --glass-bg: rgba(255, 255, 255, 0.95);
+    --text-muted: #949498;
+    --modal-bg: #ffffff;
 }
 
 * {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent; /* Clean mobile taps */
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -27,7 +27,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -35,7 +35,7 @@ body {
 /* --- HERO & HEADER --- */
 .hero {
     background: #15151e;
-    padding: 60px 0 30px 0;
+    padding: 50px 0 30px 0;
     text-align: center;
     border-bottom: 1px solid #333;
 }
@@ -53,7 +53,7 @@ body {
 }
 
 h1 {
-    font-size: 2.8rem;
+    font-size: 3rem;
     text-transform: uppercase;
     margin: 0;
     letter-spacing: -1px;
@@ -65,70 +65,84 @@ h1 {
     align-items: center;
     gap: 8px;
     color: var(--text-muted);
-    margin-top: 8px;
+    margin-top: 5px;
     font-size: 1.2rem;
 }
 
-/* --- RACE SELECTION SLIDER (Option A) --- */
+/* --- SMART RACE SLIDER --- */
 .slider-wrapper {
     margin-top: 40px;
-    position: relative;
+}
+
+.slider-hint {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    opacity: 0.8;
 }
 
 .race-slider {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     overflow-x: auto;
     padding: 10px 0 25px 0;
-    scrollbar-width: none; /* Hide scrollbar Firefox */
-    -webkit-overflow-scrolling: touch; /* Smooth mobile swipe */
+    scrollbar-width: none; /* Firefox */
+    -webkit-overflow-scrolling: touch;
 }
 
 .race-slider::-webkit-scrollbar {
-    display: none; /* Hide scrollbar Chrome/Safari */
+    display: none; /* Chrome/Safari */
 }
 
 .race-card {
     flex: 0 0 auto;
     background: #252530;
-    padding: 15px 25px;
+    padding: 15px 20px;
     border-radius: 10px;
     cursor: pointer;
     border: 2px solid transparent;
     transition: all 0.2s ease;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    min-width: 140px;
 }
 
 .race-card span {
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: #777;
     margin-bottom: 4px;
     font-weight: bold;
 }
 
 .race-card strong {
-    font-size: 1rem;
+    font-size: 0.95rem;
     text-transform: uppercase;
     white-space: nowrap;
 }
 
-.race-card:hover {
-    background: #2d2d3a;
+.race-card small {
+    color: var(--f1-red);
+    font-size: 0.75rem;
+    margin-top: 8px;
+    font-weight: bold;
 }
 
 .race-card.active {
     border-color: var(--f1-red);
     background: #2d2d3a;
-    box-shadow: 0 4px 15px rgba(225, 6, 0, 0.2);
+    box-shadow: 0 4px 20px rgba(225, 6, 0, 0.25);
 }
 
 /* --- CONTINENT GRID --- */
 .continent-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 25px;
-    margin: 40px 0 100px 0;
+    margin: 40px 0 150px 0;
 }
 
 .continent-box {
@@ -141,11 +155,10 @@ h1 {
 .continent-box h3 {
     color: var(--f1-red);
     text-transform: uppercase;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     margin: 0 0 15px 0;
     border-bottom: 1px solid #333;
     padding-bottom: 12px;
-    letter-spacing: 1px;
 }
 
 .city-item {
@@ -153,90 +166,95 @@ h1 {
     cursor: pointer;
     border-bottom: 1px solid #2a2a35;
     position: relative;
-    transition: background 0.2s;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    transition: 0.2s;
 }
 
 .city-item:hover {
     background: #2d2d3a;
-    border-radius: 4px;
-}
-
-.city-item::after {
-    content: '›';
-    color: #555;
-    font-size: 1.2rem;
+    color: var(--f1-red);
 }
 
 /* --- TOOLTIP & MOBILE MODAL --- */
 .session-tooltip {
     display: none;
-    position: fixed; /* Modal style for mobile */
+    position: fixed; /* Center modal on mobile */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: var(--glass-bg);
+    background: var(--modal-bg);
     color: #111;
     padding: 25px;
     border-radius: 16px;
     width: 90vw;
     max-width: 340px;
     z-index: 10000;
-    box-shadow: 0 0 0 2000px rgba(0,0,0,0.8); /* Dim backdrop */
-    pointer-events: auto; /* Allow interaction with 'X' */
+    box-shadow: 0 0 0 2000px rgba(0,0,0,0.85); /* Dim background */
 }
 
 .close-tooltip {
     position: absolute;
     top: 10px;
     right: 15px;
-    font-size: 1.8rem;
+    font-size: 2rem;
+    font-weight: 300;
     color: #999;
     cursor: pointer;
+    line-height: 1;
+}
+
+.close-tooltip:hover {
+    color: var(--f1-red);
 }
 
 .tooltip-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0;
+    padding: 10px 0;
     border-bottom: 1px solid #eee;
 }
 
-.tooltip-row:last-child { border: none; }
+.tooltip-row:last-child {
+    border-bottom: none;
+}
 
 .session-val {
     color: var(--f1-red);
     font-weight: 800;
     font-family: monospace;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
 }
 
-/* --- DESKTOP REFINEMENTS (PC) --- */
+/* --- PC OVERFLOW FIXES --- */
 @media (min-width: 1024px) {
-    .city-item::after { display: none; } /* Hide arrow on PC */
-
     .session-tooltip {
-        position: absolute; /* Hover style for PC */
+        position: absolute; /* Hover logic for PC */
         top: 0;
         left: 105%;
         transform: none;
         width: 280px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-        pointer-events: none; /* Prevents vibration */
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        pointer-events: none; /* Vibration prevention */
     }
 
-    .close-tooltip { display: none; } /* No 'X' needed on PC */
+    .close-tooltip {
+        display: none; /* PC uses mouseout to close */
+    }
+
+    /* Hard-coded fail-safe for right-most column */
+    .continent-grid > div:nth-child(3n) .session-tooltip,
+    .continent-grid > div:last-child .session-tooltip {
+        left: auto !important;
+        right: 105% !important;
+    }
 }
 
-/* --- MOBILE REFINEMENTS --- */
+/* --- MOBILE RESPONSIVENESS --- */
 @media (max-width: 768px) {
-    h1 { font-size: 1.8rem; }
+    h1 { font-size: 2rem; }
     .hero { padding: 40px 0 20px 0; }
     
     .race-card {
-        min-width: 150px; /* Force 'peek' effect */
+        min-width: 150px;
     }
 }
