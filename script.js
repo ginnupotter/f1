@@ -30,11 +30,9 @@ const continentData = {
         { name: "Kathmandu", tz: "Asia/Kathmandu" },
         { name: "Singapore", tz: "Asia/Singapore" },
         { name: "Tokyo", tz: "Asia/Tokyo" },
-        { name: "Eucla", tz: "Australia/Eucla" },
         { name: "Adelaide", tz: "Australia/Adelaide" },
         { name: "Sydney", tz: "Australia/Sydney" },
         { name: "Auckland", tz: "Pacific/Auckland" },
-        { name: "Chatham Islands", tz: "Pacific/Chatham" },
         { name: "Kiritimati", tz: "Pacific/Kiritimati" }
     ]
 };
@@ -76,7 +74,6 @@ function updateUI(idx) {
             const tooltip = document.createElement('div');
             tooltip.className = 'session-tooltip';
             
-            // X Button for Mobile
             const closeBtn = document.createElement('span');
             closeBtn.className = 'close-tooltip';
             closeBtn.innerHTML = '&times;';
@@ -86,9 +83,29 @@ function updateUI(idx) {
             let content = `<h4 style="margin:0 0 10px 0">${city.name}</h4>`;
             for (const [s, t] of Object.entries(race.sessions)) {
                 const date = new Date(t);
-                const timeStr = date.toLocaleTimeString('en-GB', { timeZone: city.tz, hour: '2-digit', minute: '2-digit' });
-                const dayStr = date.toLocaleDateString('en-GB', { timeZone: city.tz, weekday: 'short', day: '2-digit' });
-                content += `<div class="tooltip-row"><span>${s.toUpperCase()}</span><span class="session-val">${dayStr} ${timeStr}</span></div>`;
+                
+                // FIXED: Now includes Month and Year
+                const timeStr = date.toLocaleTimeString('en-GB', { 
+                    timeZone: city.tz, 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                const dateStr = date.toLocaleDateString('en-GB', { 
+                    timeZone: city.tz, 
+                    weekday: 'short', 
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric' 
+                });
+
+                content += `
+                    <div class="tooltip-row">
+                        <div style="display:flex; flex-direction:column">
+                            <span class="session-label">${s.toUpperCase()}</span>
+                            <span style="font-size:0.7rem; color:#666">${dateStr}</span>
+                        </div>
+                        <span class="session-val">${timeStr}</span>
+                    </div>`;
             }
             
             const contentDiv = document.createElement('div');
@@ -96,14 +113,17 @@ function updateUI(idx) {
             tooltip.appendChild(contentDiv);
             item.appendChild(tooltip);
 
-            // PC HOVER LOGIC WITH BOUNDARY CHECK
             item.onmouseenter = () => {
                 tooltip.style.display = 'block';
                 if (window.innerWidth >= 1024) {
                     const rect = tooltip.getBoundingClientRect();
+                    // If box hits right edge, move to left
                     if (rect.right > window.innerWidth) {
                         tooltip.style.left = 'auto';
                         tooltip.style.right = '105%';
+                    } else {
+                        tooltip.style.left = '105%';
+                        tooltip.style.right = 'auto';
                     }
                 }
             };
