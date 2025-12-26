@@ -1,8 +1,40 @@
 const continentData = {
-    "North America": [{ name: "Los Angeles", tz: "America/Los_Angeles" }, { name: "Denver", tz: "America/Denver" }, { name: "Chicago", tz: "America/Chicago" }, { name: "New York", tz: "America/New_York" }],
-    "South America": [{ name: "Lima", tz: "America/Lima" }, { name: "Santiago", tz: "America/Santiago" }, { name: "São Paulo", tz: "America/Sao_Paulo" }],
-    "Europe & Africa": [{ name: "London", tz: "Europe/London" }, { name: "Amsterdam", tz: "Europe/Amsterdam" }, { name: "Cairo", tz: "Africa/Cairo" }, { name: "Johannesburg", tz: "Africa/Johannesburg" }],
-    "Asia & Oceania": [{ name: "Dubai", tz: "Asia/Dubai" }, { name: "Delhi", tz: "Asia/Kolkata" }, { name: "Singapore", tz: "Asia/Singapore" }, { name: "Tokyo", tz: "Asia/Tokyo" }, { name: "Sydney", tz: "Australia/Sydney" }, { name: "Auckland", tz: "Pacific/Auckland" }]
+    "North America": [
+        { name: "Honolulu", tz: "Pacific/Honolulu" },
+        { name: "Vancouver", tz: "America/Vancouver" },
+        { name: "Los Angeles", tz: "America/Los_Angeles" },
+        { name: "Phoenix", tz: "America/Phoenix" },
+        { name: "Mexico City", tz: "America/Mexico_City" },
+        { name: "Chicago", tz: "America/Chicago" },
+        { name: "New York", tz: "America/New_York" },
+    ],
+    "South America": [
+        { name: "Bogota", tz: "America/Bogota" },
+        { name: "Lima", tz: "America/Lima" },
+        { name: "Santiago", tz: "America/Santiago" },
+        { name: "Caracas", tz: "America/Caracas" },
+        { name: "Buenos Aires", tz: "America/Argentina/Buenos_Aires" },
+        { name: "São Paulo", tz: "America/Sao_Paulo" },
+        { name: "Fernando de Noronha", tz: "America/Noronha" }
+    ],
+    "Europe & Africa": [
+        { name: "Ponta Delgada", tz: "Atlantic/Azores" },
+        { name: "Casablanca", tz: "Africa/Casablanca" },
+        { name: "London", tz: "Europe/London" },
+        { name: "Amsterdam", tz: "Europe/Amsterdam" },
+        { name: "Berlin", tz: "Europe/Berlin" },
+        { name: "Johannesburg", tz: "Africa/Johannesburg" },
+        { name: "Athens", tz: "Europe/Athens" },
+    ],
+    "Asia & Oceania": [
+        { name: "Dubai", tz: "Asia/Dubai" },
+        { name: "Delhi", tz: "Asia/Kolkata" },
+        { name: "Singapore", tz: "Asia/Singapore" },
+        { name: "Tokyo", tz: "Asia/Tokyo" },
+        { name: "Adelaide", tz: "Australia/Adelaide" },
+        { name: "Sydney", tz: "Australia/Sydney" },
+        { name: "Auckland", tz: "Pacific/Auckland" }
+    ]
 };
 
 let allRaces = [];
@@ -20,7 +52,17 @@ async function init() {
         allRaces.forEach((race, i) => {
             const card = document.createElement('div');
             card.className = `race-card ${i === nextIdx ? 'active' : ''}`;
-            card.innerHTML = `<span>ROUND ${i+1}</span><strong>${race.name}</strong>`;
+            
+            // Format date for the slider card
+            const gpDate = new Date(race.sessions.gp);
+            const dateStr = gpDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+
+            card.innerHTML = `
+                <span>ROUND ${i+1}</span>
+                <strong>${race.name}</strong>
+                <small>${dateStr}</small>
+            `;
+            
             card.onclick = () => {
                 document.querySelectorAll('.race-card').forEach(c => c.classList.remove('active'));
                 card.classList.add('active');
@@ -28,7 +70,6 @@ async function init() {
             };
             slider.appendChild(card);
             
-            // Auto-scroll to the next race
             if (i === nextIdx) {
                 setTimeout(() => card.scrollIntoView({ behavior: 'smooth', inline: 'center' }), 100);
             }
@@ -42,10 +83,6 @@ function updateUI(idx) {
     const race = allRaces[idx];
     document.getElementById('race-name').textContent = race.name + " GP";
     document.getElementById('race-location').textContent = race.location;
-
-    // Update the "NEXT" badge visibility
-    const isNext = new Date(race.sessions.gp) > new Date();
-    document.getElementById('next-badge').style.display = isNext ? 'inline-block' : 'none';
 
     const grid = document.getElementById('continent-grid');
     grid.innerHTML = '';
@@ -63,6 +100,16 @@ function updateUI(idx) {
             const tooltip = document.createElement('div');
             tooltip.className = 'session-tooltip';
             
+            // Re-adding the Close Button for mobile
+            const closeBtn = document.createElement('span');
+            closeBtn.className = 'close-tooltip';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.onclick = (e) => {
+                e.stopPropagation();
+                tooltip.style.display = 'none';
+            };
+            tooltip.appendChild(closeBtn);
+
             let content = `<h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">${city.name}</h4>`;
             for (const [s, t] of Object.entries(race.sessions)) {
                 const d = new Date(t);
@@ -79,17 +126,31 @@ function updateUI(idx) {
                     </div>`;
             }
             
-            tooltip.innerHTML = content;
+            const contentWrap = document.createElement('div');
+            contentWrap.innerHTML = content;
+            tooltip.appendChild(contentWrap);
             item.appendChild(tooltip);
 
             item.onmouseenter = () => {
                 tooltip.style.display = 'block';
                 if (window.innerWidth >= 1024) {
                     const rect = tooltip.getBoundingClientRect();
-                    if (rect.right > window.innerWidth) { tooltip.style.left = 'auto'; tooltip.style.right = '105%'; }
-                    else { tooltip.style.left = '105%'; tooltip.style.right = 'auto'; }
-                    if (rect.bottom > window.innerHeight) { tooltip.style.top = 'auto'; tooltip.style.bottom = '0'; }
-                    else { tooltip.style.top = '0'; tooltip.style.bottom = 'auto'; }
+                    // Detect right-side overflow and flip
+                    if (rect.right > window.innerWidth || rect.left + rect.width > window.innerWidth) {
+                        tooltip.style.left = 'auto';
+                        tooltip.style.right = '105%';
+                    } else {
+                        tooltip.style.left = '105%';
+                        tooltip.style.right = 'auto';
+                    }
+                    // Vertical flip
+                    if (rect.bottom > window.innerHeight) {
+                        tooltip.style.top = 'auto';
+                        tooltip.style.bottom = '0';
+                    } else {
+                        tooltip.style.top = '0';
+                        tooltip.style.bottom = 'auto';
+                    }
                 }
             };
             item.onmouseleave = () => { if (window.innerWidth >= 1024) tooltip.style.display = 'none'; };
