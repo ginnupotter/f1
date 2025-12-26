@@ -47,3 +47,28 @@ h1 { font-size: 2.5rem; text-transform: uppercase; margin: 10px 0; }
 
 .tooltip-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
 .session-val { color: var(--f1-red); font-weight: bold; font-family: monospace; font-size: 1rem; }
+
+html, body {
+    /* Prevents the page from "bouncing" or jittering on scroll/hover */
+    overscroll-behavior-y: none; 
+    overflow-x: hidden; /* Prevent horizontal jitter */
+}
+
+/* Updated PC Tooltip Logic */
+@media (min-width: 1024px) {
+    .session-tooltip {
+        position: absolute;
+        /* Ensure the tooltip doesn't extend the page height */
+        bottom: auto; 
+        z-index: 10000;
+        /* This prevents the tooltip from being interactable, 
+           stopping the "on/off" hover loop if the mouse touches it */
+        pointer-events: none; 
+    }
+}
+
+/* Add a safety margin to the bottom of the container 
+   so the last cities have space to show their boxes */
+.container {
+    padding-bottom: 150px; 
+}
