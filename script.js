@@ -80,4 +80,109 @@ async function init() {
 function updateUI(raceIndex) {
     const race = allRaces[raceIndex];
     document.getElementById('race-name').textContent = race.name + " GP";
-    document.getElementById('race-location').textContent
+    document.getElementById('race-location').textContent = race.location;
+
+    const grid = document.getElementById('continent-grid');
+    grid.innerHTML = '';
+
+    for (const [continent, cities] of Object.entries(continentData)) {
+        const box = document.createElement('div');
+        box.className = 'continent-box';
+        box.innerHTML = `<h3>${continent}</h3>`;
+        
+        cities.forEach(city => {
+            const item = document.createElement('div');
+            item.className = 'city-item';
+            item.innerHTML = `<span>${city.name}</span>`;
+
+            // Create Tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'session-tooltip';
+            
+            // Mobile Close Button (X)
+            const closeBtn = document.createElement('span');
+            closeBtn.className = 'close-tooltip';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.onclick = (e) => {
+                e.stopPropagation(); // Prevents immediate re-opening
+                tooltip.style.display = 'none';
+            };
+            tooltip.appendChild(closeBtn);
+
+            // Tooltip Content Construction
+            let content = `<h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">${city.name}</h4>`;
+            for (const [sessionName, sessionTime] of Object.entries(race.sessions)) {
+                const dateObj = new Date(sessionTime);
+                
+                // Format: HH:MM
+                const timeString = dateObj.toLocaleTimeString('en-GB', { 
+                    timeZone: city.tz, hour: '2-digit', minute: '2-digit' 
+                });
+                
+                // Format: Day, DD Month YYYY
+                const dateString = dateObj.toLocaleDateString('en-GB', { 
+                    timeZone: city.tz, weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' 
+                });
+
+                content += `
+                    <div class="tooltip-row">
+                        <div style="display:flex; flex-direction:column">
+                            <span style="font-weight:bold; font-size:0.8rem;">${sessionName.toUpperCase()}</span>
+                            <span style="font-size:0.65rem; color:#666">${dateString}</span>
+                        </div>
+                        <span class="session-val">${timeString}</span>
+                    </div>`;
+            }
+            
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = content;
+            tooltip.appendChild(wrapper);
+            item.appendChild(tooltip);
+
+            /**
+             * POSITIONING & VIBRATION FIX
+             */
+            item.onmouseenter = () => {
+                tooltip.style.display = 'block';
+                
+                // Boundary checking for PC (min-width 1024px)
+                if (window.innerWidth >= 1024) {
+                    const rect = tooltip.getBoundingClientRect();
+                    const winH = window.innerHeight;
+                    const winW = window.innerWidth;
+
+                    // Horizontal flip if it hits the right edge
+                    if (rect.right > winW) {
+                        tooltip.style.left = 'auto';
+                        tooltip.style.right = '105%';
+                    } else {
+                        tooltip.style.left = '105%';
+                        tooltip.style.right = 'auto';
+                    }
+
+                    // Vertical flip if it hits the bottom edge (prevents scroll-vibration)
+                    if (rect.bottom > winH) {
+                        tooltip.style.top = 'auto';
+                        tooltip.style.bottom = '0';
+                    } else {
+                        tooltip.style.top = '0';
+                        tooltip.style.bottom = 'auto';
+                    }
+                }
+            };
+
+            // Remove tooltip on mouse exit for PC
+            item.onmouseleave = () => {
+                if (window.innerWidth >= 1024) {
+                    tooltip.style.display = 'none';
+                }
+            };
+
+            box.appendChild(item);
+        });
+        grid.appendChild(box);
+    }
+}
+
+// Fire it up
+init();
