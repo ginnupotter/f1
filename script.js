@@ -37,8 +37,6 @@ const continentData = {
     ]
 };
 
-let allRaces = [];
-
 async function init() {
     try {
         const response = await fetch('races.json');
@@ -46,15 +44,19 @@ async function init() {
         
         const slider = document.getElementById('race-slider');
         const now = new Date();
+        
+        // Find next race
         let nextIdx = allRaces.findIndex(r => new Date(r.sessions.gp) > now);
         if (nextIdx === -1) nextIdx = 0;
 
         allRaces.forEach((race, i) => {
-            const card = document.createElement('div');
-            card.className = `race-card ${i === nextIdx ? 'active' : ''}`;
-            
-            // Format date for the slider card
             const gpDate = new Date(race.sessions.gp);
+            const isPast = gpDate < now;
+            
+            const card = document.createElement('div');
+            // FIX: Added 'past' class logic
+            card.className = `race-card ${i === nextIdx ? 'active' : ''} ${isPast ? 'past' : ''}`;
+            
             const dateStr = gpDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 
             card.innerHTML = `
@@ -74,6 +76,15 @@ async function init() {
                 setTimeout(() => card.scrollIntoView({ behavior: 'smooth', inline: 'center' }), 100);
             }
         });
+
+        // BUTTON NAVIGATION LOGIC
+        const scrollAmount = 300;
+        document.getElementById('next-btn').onclick = () => {
+            slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        };
+        document.getElementById('prev-btn').onclick = () => {
+            slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        };
 
         updateUI(nextIdx);
     } catch (e) { console.error(e); }
@@ -95,22 +106,19 @@ function updateUI(idx) {
         cities.forEach(city => {
             const item = document.createElement('div');
             item.className = 'city-item';
-            item.innerHTML = `<span>${city.name}</span>`;
+            item.innerHTML = `<span>${city.name.replace('_', ' ')}</span>`;
 
             const tooltip = document.createElement('div');
             tooltip.className = 'session-tooltip';
             
-            // Re-adding the Close Button for mobile
+            // Mobile Close Button
             const closeBtn = document.createElement('span');
             closeBtn.className = 'close-tooltip';
             closeBtn.innerHTML = '&times;';
-            closeBtn.onclick = (e) => {
-                e.stopPropagation();
-                tooltip.style.display = 'none';
-            };
+            closeBtn.onclick = (e) => { e.stopPropagation(); tooltip.style.display = 'none'; };
             tooltip.appendChild(closeBtn);
 
-            let content = `<h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">${city.name}</h4>`;
+            let content = `<h4 style="margin:0 0 10px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">${city.name.replace('_', ' ')}</h4>`;
             for (const [s, t] of Object.entries(race.sessions)) {
                 const d = new Date(t);
                 const tStr = d.toLocaleTimeString('en-GB', { timeZone: city.tz, hour: '2-digit', minute: '2-digit' });
@@ -126,24 +134,22 @@ function updateUI(idx) {
                     </div>`;
             }
             
-            const contentWrap = document.createElement('div');
-            contentWrap.innerHTML = content;
-            tooltip.appendChild(contentWrap);
+            const wrap = document.createElement('div');
+            wrap.innerHTML = content;
+            tooltip.appendChild(wrap);
             item.appendChild(tooltip);
 
             item.onmouseenter = () => {
                 tooltip.style.display = 'block';
                 if (window.innerWidth >= 1024) {
                     const rect = tooltip.getBoundingClientRect();
-                    // Detect right-side overflow and flip
-                    if (rect.right > window.innerWidth || rect.left + rect.width > window.innerWidth) {
+                    if (rect.right > window.innerWidth) {
                         tooltip.style.left = 'auto';
                         tooltip.style.right = '105%';
                     } else {
                         tooltip.style.left = '105%';
                         tooltip.style.right = 'auto';
                     }
-                    // Vertical flip
                     if (rect.bottom > window.innerHeight) {
                         tooltip.style.top = 'auto';
                         tooltip.style.bottom = '0';
