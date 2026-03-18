@@ -49,6 +49,7 @@
     },
     {
       "name": "Bahrain",
+      "cancelled": true,
       "location": "Sakhir",
       "latitude": 26.037,
       "longitude": 50.5112,
@@ -65,6 +66,7 @@
     },
     {
       "name": "Saudi Arabian",
+      "cancelled": true,
       "location": "Jeddah",
       "latitude": 21.485811,
       "longitude": 39.192505,

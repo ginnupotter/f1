@@ -4,18 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="favicon.png">
-    <title>F1 Global Race Timings</title>
+    <title>TrakTym</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
    <header class="hero">
     <div class="container">
+        <div id="next-race-strip" class="next-session-strip">
+            <span class="next-session-label">Next race in your timezone</span>
+            <span id="next-race-detail">—</span>
+            <span id="user-tz-label" class="user-tz-label"></span>
+        </div>
         <div id="next-badge" class="badge">GRAND PRIX</div>
         <h1 id="race-name">Loading...</h1>
         <div class="location-box">
             <span class="pin">📍</span>
             <span id="race-location">Detecting...</span>
+        </div>
+        <div id="countdown-block" class="countdown-block">
+            <span class="countdown-label">Time until race start</span>
+            <div id="countdown-display" class="countdown-display" aria-live="polite">—</div>
         </div>
 
        <div class="slider-wrapper">
